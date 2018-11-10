@@ -1,3 +1,99 @@
+ String url = "http://denan.com.br/worshop_marias/apis/cadastrarUsuario.php";
+    Button btnVoltar;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_listar_usuarios);
+        this.setTitle("Lista de Usuarios");
+
+        btnVoltar = (Button)findViewById(R.id.btnVoltar);
+
+        final ListView listaDeUsuarios = (ListView) findViewById(R.id.lista);
+        final ArrayList<Usuario> usuarios = new ArrayList<Usuario>();
+
+        final ArrayAdapter<Usuario> adapter = new ArrayAdapter<Usuario>(this,
+                android.R.layout.simple_list_item_1, usuarios);
+
+
+        listaDeUsuarios.setAdapter(adapter);
+        listaDeUsuarios.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                Log.i("listar", "ListarUsuarios: " + usuarios.get(position).getNome());
+                Toast.makeText(ListarUsuariosActivity.this, "You Clicked at " + position, Toast.LENGTH_SHORT).show();
+
+                EditarUsuariosActivity.usuarioAEditar = usuarios.get(position);
+
+                Intent intent = new Intent(ListarUsuariosActivity.this, EditarUsuariosActivity.class);
+                startActivity(intent);
+                finish();
+
+            }
+        });
+
+
+
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject jsonObject = new JSONObject(response);
+                            JSONArray jsonArray = jsonObject.getJSONArray("usuarios");
+
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject j = new JSONObject(jsonArray.getString(i));
+
+                                Usuario u = new Usuario();
+                                u.setId(j.getString("id"));
+                                u.setNome(j.getString("nome"));
+                                u.setEmail(j.getString("email"));
+                                u.setIdade(Integer.parseInt(j.getString("idade")));
+                                u.setEndereco(j.getString("endereco"));
+                                u.setTelefone(Integer.parseInt(j.getString("telefone")));
+                                u.setCpf(Integer.parseInt(j.getString("cpf")));
+                                u.setSenha(j.getString("senha"));
+
+                                if (j.optString(j.getString("id")) != null) {
+                                    usuarios.add(u);
+                                }
+                                Log.i("testJson", "ListarUsuarios: " + j.getString("nome"));
+                            }
+
+                            // Once we added the string to the array, we notify the arrayAdapter
+                            adapter.notifyDataSetChanged();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+            }
+        });
+        queue.add(stringRequest);
+
+        btnVoltar = (Button)findViewById(R.id.btnVoltar);
+
+        btnVoltar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(), MainActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+    }
+
+
+
+
+**************************************************************************
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
